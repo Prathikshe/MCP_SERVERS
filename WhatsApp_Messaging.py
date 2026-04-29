@@ -27,7 +27,7 @@ mcp = FastMCP(
     port=7030
 )
 
-def _get_credentials_by_app_name(whatsapp_business_profile: str) -> tuple[str, str]:
+def _get_credentials_by_whatsapp_profile(whatsapp_business_profile: str) -> tuple[str, str]:
     """
     Reads credentials.json and returns the (phone_number_id, api_access_token) 
     for the matching whatsapp_business_profile.
@@ -52,7 +52,7 @@ def _get_credentials_by_app_name(whatsapp_business_profile: str) -> tuple[str, s
             
     raise ValueError(f"App name '{whatsapp_business_profile}' was not found in credentials.json.")
 
-def _list_available_apps() -> list[str]:
+def list_whatsapp_profiles() -> list[str]:
     """Returns a list of all available app names from credentials.json."""
     try:
         with open("credentials.json", "r") as f:
@@ -66,7 +66,7 @@ async def _send(payload: dict, whatsapp_business_profile: str) -> dict:
     Internal helper function to send the payload to the WhatsApp Cloud API.
     Dynamically fetches credentials based on the provided whatsapp_business_profile.
     """
-    phone_number_id, api_access_token = _get_credentials_by_app_name(whatsapp_business_profile)
+    phone_number_id, api_access_token = _get_credentials_by_whatsapp_profile(whatsapp_business_profile)
     print(phone_number_id, api_access_token)
     url = f"https://graph.facebook.com/v24.0/{phone_number_id}/messages"
     
@@ -84,7 +84,7 @@ async def _send(payload: dict, whatsapp_business_profile: str) -> dict:
         return response.json()
 
 @mcp.tool()
-def list_whatsapp_apps() -> list[str]:
+def list_whatsapp_profiles() -> list[str]:
     """
     List all available WhatsApp app profiles configured in credentials.json.
     Call this first if you are unsure which whatsapp_business_profile to use.
@@ -92,10 +92,10 @@ def list_whatsapp_apps() -> list[str]:
     Returns:
         A list of available app names.
     """
-    apps = _list_available_apps()
-    if not apps:
-        return ["No apps found. Please check your credentials.json file."]
-    return apps
+    profiles = list_whatsapp_profiles()
+    if not profiles:
+        return ["No profiles found. Please check your credentials.json file."]
+    return profiles
 
 @mcp.tool()
 async def send_whatsapp_text(
